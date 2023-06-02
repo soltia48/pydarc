@@ -4,6 +4,8 @@
 
 This software decodes Data Radio Channel (DARC) bitstream.
 
+You can use it for demodulation: [darc_demod.grc](https://gist.github.com/soltia48/2a635cf2a5b6921559327317c710ecd8)
+
 ## Usage
 
 ### Decode
