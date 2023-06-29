@@ -1,14 +1,15 @@
 import bitstring
+from logging import getLogger
+
+__logger = getLogger(__name__)
 
 
-def __reflect_bits(value, bits):
-    result = 0
-    for i in range(bits):
-        result = (result << 1) | ((value >> i) & 1)
-    return result
+def __generate_crc_82_darc_table() -> list[int]:
+    """Generate CRC-82/DARC table
 
-
-def __generate_crc_82_darc_table():
+    Returns:
+        list[int]: CRC-82/DARC table
+    """
     table = [0] * 256
     for i in range(256):
         value = i << 74
@@ -25,14 +26,31 @@ def __generate_crc_82_darc_table():
 __crc_82_darc_table = __generate_crc_82_darc_table()
 
 
-def __crc_82_darc_table_driven(message: bytes | bitstring.Bits):
+def __crc_82_darc_table_driven(message: bytes | bitstring.Bits) -> int:
+    """Calculate CRC-82/DARC with table driven algorithm
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+
+    Returns:
+        int: CRC value
+    """
     crc = 0x000000000000000000000
     for value in message:
         crc = __crc_82_darc_table[((crc >> 74) ^ value) & 0xFF] ^ (crc << 8)
     return crc & 0x3FFFFFFFFFFFFFFFFFFFF
 
 
-def __crc_82_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int):
+def __crc_82_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int) -> int:
+    """Calculate CRC-82/DARC with bit by bit aigorithm
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+        bits (int): Number of bit in message
+
+    Returns:
+        int: CRC value
+    """
     crc = 0x000000000000000000000
     for value in message:
         for i in range(8):
@@ -51,7 +69,16 @@ def __crc_82_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int):
     return crc & 0x3FFFFFFFFFFFFFFFFFFFF
 
 
-def crc_82_darc(message: bytes | bitstring.Bits, bits: int | None = None):
+def crc_82_darc(message: bytes | bitstring.Bits, bits: int | None = None) -> int:
+    """Calculate CRC-82/DARC
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+        bits (int | None, optional): Number of bit in message. Defaults to None.
+
+    Returns:
+        int: CRC value
+    """
     if bits is None:
         bits = 8 * len(message)
 
@@ -61,7 +88,18 @@ def crc_82_darc(message: bytes | bitstring.Bits, bits: int | None = None):
         return __crc_82_darc_bit_by_bit(message, bits)
 
 
-def generate_bitflip_syndrome_map(length: int, error_width: int):
+def __generate_bitflip_syndrome_map(
+    length: int, error_width: int
+) -> dict[int, bitstring.Bits]:
+    """Generate bitflip syndrome map
+
+    Args:
+        length (int): Length
+        error_width (int): Error width
+
+    Returns:
+        dict[int, bitstring.Bits]: Bitflip syndrome map
+    """
     bitflip_syndrome_map: dict[int, bitstring.Bits] = dict()
     for i in range(1, error_width + 1):
         error_base = 1 << (i - 1) | 1
@@ -73,3 +111,31 @@ def generate_bitflip_syndrome_map(length: int, error_width: int):
                 error_vector = bitstring.Bits(uint=error, length=length)
                 bitflip_syndrome_map[crc_82_darc(error_vector, length)] = error_vector
     return bitflip_syndrome_map
+
+
+__parity_bitflip_syndrome_map_dscc_272_190 = __generate_bitflip_syndrome_map(272, 8)
+
+
+def correct_error_dscc_272_190(buffer: bitstring.Bits) -> bitstring.Bits | None:
+    """Correct error with Difference Set Cyclic Codes (272,190)
+
+    Args:
+        buffer (bitstring.Bits): Buffer
+
+    Returns:
+        bitstring.Bits | None: bitstring.Bits if data corrected, else None
+    """
+    syndrome = crc_82_darc(buffer)
+    if syndrome == 0:
+        return buffer
+
+    __logger.debug(
+        f"Syndrome is not zero. Try correct error with parity. syndrome={hex(syndrome)}"
+    )
+    try:
+        error_vector = __parity_bitflip_syndrome_map_dscc_272_190[syndrome]
+        __logger.debug(f"Error vector found. error_vector={error_vector.bytes.hex()}")
+        return buffer ^ error_vector
+    except KeyError:
+        __logger.warning("Error vector not found. Cannot correct error.")
+        return

@@ -1,14 +1,12 @@
 import bitstring
 
 
-def __reflect_bits(value, bits):
-    result = 0
-    for i in range(bits):
-        result = (result << 1) | ((value >> i) & 1)
-    return result
+def __generate_crc_14_darc_table() -> list[int]:
+    """Generate CRC-14/DARC table
 
-
-def __generate_crc_14_darc_table():
+    Returns:
+        list[int]: CRC-14/DARC table
+    """
     table = [0] * 256
     for i in range(256):
         value = i << 6
@@ -21,14 +19,31 @@ def __generate_crc_14_darc_table():
 __crc_14_darc_table = __generate_crc_14_darc_table()
 
 
-def __crc_14_darc_table_driven(message: bytes | bitstring.Bits):
+def __crc_14_darc_table_driven(message: bytes | bitstring.Bits) -> int:
+    """Calculate CRC-14/DARC with table driven algorithm
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+
+    Returns:
+        int: CRC value
+    """
     crc = 0x0000
     for value in message:
         crc = __crc_14_darc_table[((crc >> 6) ^ value) & 0xFF] ^ (crc << 8)
     return crc & 0x3FFF
 
 
-def __crc_14_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int):
+def __crc_14_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int) -> int:
+    """Calculate CRC-14/DARC with bit by bit algorithm
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+        bits (int): Number of bit in message
+
+    Returns:
+        int: CRC value
+    """
     crc = 0x0000
     for value in message:
         for i in range(8):
@@ -45,7 +60,16 @@ def __crc_14_darc_bit_by_bit(message: bytes | bitstring.Bits, bits: int):
     return crc & 0x3FFF
 
 
-def crc_14_darc(message: bytes | bitstring.Bits, bits: int | None = None):
+def crc_14_darc(message: bytes | bitstring.Bits, bits: int | None = None) -> int:
+    """Calculate CRC-14/DARC
+
+    Args:
+        message (bytes | bitstring.Bits): Message
+        bits (int | None, optional): Number of bit in message. Defaults to None.
+
+    Returns:
+        int: CRC value
+    """
     if bits is None:
         bits = 8 * len(message)
 
