@@ -80,7 +80,7 @@ class DarcL2BlockDecoder:
             bit (int): 0 or 1
 
         Returns:
-            DarcL2BlockType | None: DarcL2BlockType if any Block detected, else None
+            DarcL2InformationBlock | DarcL2ParityBlock | None: DarcL2BlockType if any Block detected, else None
         """
         if self.__detected_bic() is None:
             self.__current_bic = ((self.__current_bic << 1) | bit) & 0xFFFF
@@ -98,14 +98,12 @@ class DarcL2BlockDecoder:
             )
             block: DarcL2InformationBlock | DarcL2ParityBlock
             if self.__is_information_block_detected():
-                block = DarcL2InformationBlock(block_id, self.__data_buffer)
+                block = DarcL2InformationBlock.from_buffer(block_id, self.__data_buffer)
             elif self.__is_parity_block_detected():
-                block = DarcL2ParityBlock(block_id, self.__data_buffer)
+                block = DarcL2ParityBlock.from_buffer(block_id, self.__data_buffer)
             else:
                 raise ValueError("Unknown Block detected.")
-            self.__logger.debug(
-                f"A block decoded. block_id={block.block_id.name} payload={block.payload}"
-            )
+            self.__logger.debug(f"A block decoded. block_id={block.block_id.name}")
 
             # Must call it when decode
             self.reset()

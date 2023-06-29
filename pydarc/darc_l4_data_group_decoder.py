@@ -51,13 +51,13 @@ class DarcL4DataGroupDecoder:
                     data_packet.service_id
                     == DarcL3DataPacketServiceIdentificationCode.ADDITIONAL_INFORMATION
                 ):
-                    data_group = DarcL4DataGroup2(
+                    data_group = DarcL4DataGroup2.from_buffer(
                         data_packet.service_id,
                         data_packet.data_group_number,
                         data_group_buffer,
                     )
                 else:
-                    data_group = DarcL4DataGroup1(
+                    data_group = DarcL4DataGroup1.from_buffer(
                         data_packet.service_id,
                         data_packet.data_group_number,
                         data_group_buffer,

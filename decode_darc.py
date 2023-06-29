@@ -55,13 +55,14 @@ def main(argv=None):
             for data_group in data_groups:
                 if isinstance(data_group, DarcL4DataGroup1):
                     print(
-                        f"is_crc_valid={data_group.is_crc_valid()} service_id={hex(data_group.service_id)} data_group_number={hex(data_group.data_group_number)} start_of_headding={hex(data_group.start_of_headding())} data_group_link={hex(data_group.data_group_link())} data_group_data={data_group.data_group_data().bytes.hex()} end_of_data_group={hex(data_group.end_of_data_group())} crc={hex(data_group.crc())}"
+                        f"is_crc_valid={data_group.is_crc_valid()} service_id={data_group.service_id.name} data_group_number={hex(data_group.data_group_number)} data_group_link={hex(data_group.data_group_link)} data_group_data={data_group.data_group_data.bytes.hex()} end_of_data_group={hex(data_group.end_of_data_group)} crc={hex(data_group.crc)}"
                     )
                 elif isinstance(data_group, DarcL4DataGroup2):
-                    crc = data_group.crc()
-                    crc_string = "None" if crc is None else hex(crc)
+                    crc_string = (
+                        "None" if data_group.crc is None else hex(data_group.crc)
+                    )
                     print(
-                        f"is_crc_valid={data_group.is_crc_valid()} service_id={hex(data_group.service_id)} data_group_number={hex(data_group.data_group_number)} segments_data={data_group.segments_data().bytes.hex()} crc={crc_string}"
+                        f"is_crc_valid={data_group.is_crc_valid()} service_id={data_group.service_id.name} data_group_number={hex(data_group.data_group_number)} segments_data={data_group.segments_data.bytes.hex()} crc={crc_string}"
                     )
     else:
         print("File input is not yet supported.")

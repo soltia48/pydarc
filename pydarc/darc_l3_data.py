@@ -1,5 +1,6 @@
 import bitstring
 from enum import IntEnum
+from typing import Self
 
 
 class DarcL3DataPacketServiceIdentificationCode(IntEnum):
@@ -24,59 +25,9 @@ class DarcL3DataPacketServiceIdentificationCode(IntEnum):
 class DarcL3DataPacket:
     """DARC L3 Data Packet"""
 
-    @staticmethod
-    def from_buffer(buffer: bytes):
-        """Construct from buffer
-
-        Args:
-            buffer (bytes): Buffer
-
-        Raises:
-            ValueError: Invalid buffer length
-
-        Returns:
-            DarcL3DataPacket: DarcL3DataPacket instance
-        """
-        buffer: bitstring.Bits = bitstring.Bits(buffer)
-        if len(buffer) != 176:
-            raise ValueError("Invalid buffer length.")
-
-        service_id = DarcL3DataPacketServiceIdentificationCode(buffer[0:4][::-1].uint)
-        decode_id_flag: int = buffer[4:5].uint
-        end_of_information_flag: int = buffer[5:6].uint
-        update_flag: int = buffer[6:8][::-1].uint
-
-        data_group_number: int
-        data_packet_number: int
-        data_block: bitstring.Bits
-        if (
-            service_id
-            == DarcL3DataPacketServiceIdentificationCode.ADDITIONAL_INFORMATION
-        ):
-            # Composition 2
-            data_group_number: int = buffer[8:12][::-1].uint
-            data_packet_number: int = buffer[12:16][::-1].uint
-            data_block = buffer[16:176]
-
-        else:
-            # Composition 1
-            data_group_number: int = buffer[8:22][::-1].uint
-            data_packet_number: int = buffer[22:32][::-1].uint
-            data_block = buffer[32:176]
-
-        return DarcL3DataPacket(
-            service_id,
-            decode_id_flag,
-            end_of_information_flag,
-            update_flag,
-            data_group_number,
-            data_packet_number,
-            data_block,
-        )
-
     def __init__(
         self,
-        service_id: int,
+        service_id: DarcL3DataPacketServiceIdentificationCode,
         decode_id_flag: int,
         end_of_information_flag: int,
         update_flag: int,
@@ -102,3 +53,53 @@ class DarcL3DataPacket:
         self.data_group_number = data_group_number
         self.data_packet_number = data_packet_number
         self.data_block = data_block
+
+    @classmethod
+    def from_buffer(cls, buffer: bytes) -> Self:
+        """Construct from buffer
+
+        Args:
+            buffer (bytes): Buffer
+
+        Raises:
+            ValueError: Invalid buffer length
+
+        Returns:
+            Self: DarcL3DataPacket instance
+        """
+        buffer: bitstring.Bits = bitstring.Bits(buffer)
+        if len(buffer) != 176:
+            raise ValueError("buffer length must be 176.")
+
+        service_id = DarcL3DataPacketServiceIdentificationCode(buffer[0:4][::-1].uint)
+        decode_id_flag: int = buffer[4:5].uint
+        end_of_information_flag: int = buffer[5:6].uint
+        update_flag: int = buffer[6:8][::-1].uint
+
+        data_group_number: int
+        data_packet_number: int
+        data_block: bitstring.Bits
+        if (
+            service_id
+            == DarcL3DataPacketServiceIdentificationCode.ADDITIONAL_INFORMATION
+        ):
+            # Composition 2
+            data_group_number: int = buffer[8:12][::-1].uint
+            data_packet_number: int = buffer[12:16][::-1].uint
+            data_block = buffer[16:176]
+
+        else:
+            # Composition 1
+            data_group_number: int = buffer[8:22][::-1].uint
+            data_packet_number: int = buffer[22:32][::-1].uint
+            data_block = buffer[32:176]
+
+        return cls(
+            service_id,
+            decode_id_flag,
+            end_of_information_flag,
+            update_flag,
+            data_group_number,
+            data_packet_number,
+            data_block,
+        )

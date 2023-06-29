@@ -2,7 +2,8 @@ from logging import getLogger
 
 from pydarc.darc_l2_data import (
     DarcL2BlockIdentificationCode,
-    DarcL2Block,
+    DarcL2InformationBlock,
+    DarcL2ParityBlock,
     DarcL2Frame,
 )
 
@@ -14,17 +15,19 @@ class DarcL2FrameDecoder:
 
     def __init__(self) -> None:
         """Constructor"""
-        self.__block_buffer: list[DarcL2Block] = []
+        self.__block_buffer: list[DarcL2InformationBlock | DarcL2ParityBlock] = []
 
     def reset(self) -> None:
         """Reset"""
         self.__block_buffer.clear()
 
-    def push_block(self, block: DarcL2Block):
+    def push_block(
+        self, block: DarcL2InformationBlock | DarcL2ParityBlock
+    ) -> DarcL2Frame | None:
         """Push a Block
 
         Args:
-            block (DarcL2Block): Block
+            block (DarcL2InformationBlock | DarcL2ParityBlock): Block
 
         Returns:
             DarcL2Frame | None: DarcL2Frame if frame detected, else None

@@ -125,6 +125,9 @@ def correct_error_dscc_272_190(buffer: bitstring.Bits) -> bitstring.Bits | None:
     Returns:
         bitstring.Bits | None: bitstring.Bits if data corrected, else None
     """
+    if len(buffer) != 272:
+        raise ValueError("buffer length must be 272.")
+
     syndrome = crc_82_darc(buffer)
     if syndrome == 0:
         return buffer
