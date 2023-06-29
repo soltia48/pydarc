@@ -12,15 +12,17 @@ You can use [GNU Radio](https://github.com/gnuradio/gnuradio) and [darc_demod.gr
 
 ```
 $ python decode_darc.py --help
-usage: decode_darc.py [-h] input_path
+usage: decode_darc.py [-h] [-log {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}] input_path
 
 DARC bitstream Decoder
 
 positional arguments:
-  input_path  Input DARC bitstream path (- to stdin)
+  input_path            Input DARC bitstream path (- to stdin)
 
 options:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  -log {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Logging level
 ```
 
 ## Authors
