@@ -1,4 +1,7 @@
-def lfsr(seed: int, polynomial: int) -> int:
+from typing import Generator
+
+
+def lfsr(seed: int, polynomial: int) -> Generator[int, None, None]:
     """Galois Linear-Feedback Shift Register
 
     Args:
@@ -6,7 +9,7 @@ def lfsr(seed: int, polynomial: int) -> int:
         polynomial (int): Polynomial
 
     Yields:
-        int: Bit (0 or 1)
+        Generator[int, None, None]: LFSR as a Generator
     """
     state = seed
     while True:
