@@ -93,6 +93,9 @@ class DarcL4DataGroup1:
         Returns:
             Self: DarcL4DataGroup1 instance
         """
+        if len(buffer) < 48:
+            raise ValueError("buffer length must be greater than or equal to 48.")
+
         start_of_headding = buffer[0:8][::-1].uint
         if start_of_headding != 0x01:
             raise ValueError("start_of_headding must be 0x01.")
